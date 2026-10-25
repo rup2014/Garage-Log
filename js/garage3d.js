@@ -1,7 +1,7 @@
 // The 3D garage: a studio floor, the car (built-in Supra or an uploaded .glb), mod parts built from
 // the part library, effects (tint, ride height, spacers, coating, wrap), and tool props on the floor.
 // Uses the global THREE (r128) and THREE.GLTFLoader loaded by index.html.
-import { SUPRA_FRAME, frameFromSize } from "./parts.js?v=mvoad0pe";
+import { SUPRA_FRAME, frameFromSize } from "./parts.js?v=mvock6uv";
 
 export const BUILTIN_MODEL = "models/supra-a90.glb";
 

@@ -2,8 +2,8 @@
 // file per uploaded 3D model, in the Drive "app data" folder: a hidden folder only this app can see.
 // The app asks only for the drive.appdata permission, so it can't read anything else in the Drive.
 // Nothing passes through any server of ours; the browser talks to Google directly.
-import { GOOGLE_CLIENT_ID } from "./config.js?v=mvoad0pe";
-import * as store from "./store.js?v=mvoad0pe";
+import { GOOGLE_CLIENT_ID } from "./config.js?v=mvock6uv";
+import * as store from "./store.js?v=mvock6uv";
 
 const SCOPE = "https://www.googleapis.com/auth/drive.appdata";
 const API = "https://www.googleapis.com/drive/v3/files";
@@ -109,11 +109,11 @@ async function syncOnce() {
 // Run a sync. interactive = started by a tap, so a sign-in popup is allowed if needed.
 export async function syncNow(interactive = false) {
   if (!available() || (!isOn() && !interactive)) return;
-  // A tap means "sign in and sync now". Get the token up front, straight from the click and before
-  // the in-flight guard below, for two reasons: the sign-in popup only opens while the browser still
-  // sees the click, and a stuck or slow background sync must not be able to swallow the tap. In
-  // needs-auth the token we hold is known bad, so drop it and force a fresh sign-in.
-  if (interactive && !running) {
+  // A tap means "sign in and sync now", so it must never be swallowed by the in-flight guard below.
+  // Get the token up front, straight from the click: the sign-in popup only opens while the browser
+  // still sees the click, and in needs-auth the token we hold is known bad so we drop it and force a
+  // fresh sign-in. Then abandon any in-flight promise so a stale or stuck sync can't block this one.
+  if (interactive) {
     if (state.status === "needs-auth") { token = null; try { sessionStorage.removeItem(TOKEN); } catch (e) {} }
     if (!(token || savedToken())) {
       set({ status: "syncing", error: "" });
@@ -126,6 +126,7 @@ export async function syncNow(interactive = false) {
         return;
       }
     }
+    running = null; again = false;
   }
   if (running) { again = true; return running; }
   running = (async () => {
@@ -141,7 +142,8 @@ export async function syncNow(interactive = false) {
       else set({ status: "error", error: e.message || "Sync didn't finish." });
     } finally {
       running = null;
-      if (again) { again = false; syncNow(false); }
+      // Re-dispatch outside this finally so it never reassigns running re-entrantly and wedges it.
+      if (again) { again = false; setTimeout(() => syncNow(false), 0); }
     }
   })();
   return running;
@@ -153,6 +155,8 @@ export function disconnect() {
   try { localStorage.removeItem(PREF); sessionStorage.removeItem(TOKEN); } catch (e) {}
   if (token && window.google && window.google.accounts) window.google.accounts.oauth2.revoke(token, () => {});
   token = null;
+  // Reset the sync machinery too, so reconnecting works without a page reload.
+  running = null; again = false; clearTimeout(timer);
   set({ status: "off", lastSync: null, error: "" });
 }
 
