@@ -1,12 +1,12 @@
-import * as store from "./store.js?v=mvo5wmhu";
-import { TEMPLATES, FINISHES, SUPRA_FRAME, detectTemplate, templateFor, templateKind, templateLabel, primsFor } from "./parts.js?v=mvo5wmhu";
-import { createGarage, yawFacing } from "./garage3d.js?v=mvo5wmhu";
-import { designPart, getKey, setKey } from "./ai.js?v=mvo5wmhu";
-import * as sync from "./sync.js?v=mvo5wmhu";
+import * as store from "./store.js?v=mvo60qvi";
+import { TEMPLATES, FINISHES, SUPRA_FRAME, detectTemplate, templateFor, templateKind, templateLabel, primsFor } from "./parts.js?v=mvo60qvi";
+import { createGarage, yawFacing } from "./garage3d.js?v=mvo60qvi";
+import { designPart, getKey, setKey } from "./ai.js?v=mvo60qvi";
+import * as sync from "./sync.js?v=mvo60qvi";
 
 // The garage holds every car's records; S.profile / S.log / S.items are the selected car's view.
 // Parts and log entries carry a carId (missing = the first car); tools are shared by all cars.
-const S = { cars: [], allLog: [], allItems: [], carId: null, profile: {}, log: [], items: [], logF: "all", partsF: "all", logQ: "", partsQ: "", wishQ: "", preview: new Set(), prevInstalled: new Set(), loaded: false };
+const S = { cars: [], allLog: [], allItems: [], carId: null, profile: {}, log: [], items: [], logF: "all", partsF: "all", wishF: "all", logQ: "", partsQ: "", wishQ: "", preview: new Set(), prevInstalled: new Set(), loaded: false };
 try { S.carId = localStorage.getItem("garage-log.car"); } catch (e) {}
 const DEFAULT_PAINT = "#121316";
 const MAX_MODEL_MB = 60;
@@ -49,7 +49,7 @@ function wireSeg(id, key) {
     render();
   });
 }
-wireSeg("logFilter", "logF"); wireSeg("partsFilter", "partsF");
+wireSeg("logFilter", "logF"); wireSeg("partsFilter", "partsF"); wireSeg("wishFilter", "wishF");
 function wireSearch(id, key) {
   $(id).addEventListener("input", (e) => { S[key] = e.target.value; render(); });
 }
@@ -182,11 +182,11 @@ function render() {
     <div class="total-line"><span>${partsShown.length} item${partsShown.length > 1 ? "s" : ""}</span><span>Total <b>${money(sum(partsShown, lineTotal))}</b></span></div>`
     : owned.length ? empty(partsQ ? "Nothing matches your search" : "Nothing matches this filter", partsQ ? "Try a different search or filter." : "Try another filter.", "")
     : empty("No purchases yet", "Record parts and tools you've bought, with price and part number.", "owned", "Add purchase");
-  const wishShown = wish.filter((i) => matches(S.wishQ, itemText(i)));
+  const wishShown = (S.wishF === "all" ? wish : wish.filter((i) => (i.kind || "part") === S.wishF)).filter((i) => matches(S.wishQ, itemText(i)));
   const wishQ = S.wishQ.trim();
   $("wishList").innerHTML = wishShown.length ? `<div class="records">${wishShown.map((i) => itemRow(i)).join("")}</div>
     <div class="total-line"><span>${wishShown.length} item${wishShown.length > 1 ? "s" : ""}</span><span>Estimated <b>${money(sum(wishShown, lineTotal))}</b></span></div>`
-    : wish.length ? empty("Nothing matches your search", "Try a different search.", "")
+    : wish.length ? empty(wishQ ? "Nothing matches your search" : "Nothing matches this filter", wishQ ? "Try a different search or filter." : "Try another filter.", "")
     : empty("Your wishlist is empty", "Add parts and tools you plan to buy, with a link and expected price.", "wishlist", "Add to wishlist");
   renderBuild();
 }
