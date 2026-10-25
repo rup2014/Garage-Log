@@ -1,7 +1,7 @@
 // Optional AI part designer. Sends the part's name and notes plus the car's frame to Claude and
 // gets back primitives in the same format the part library uses. Runs in the browser with the
 // visitor's own Anthropic API key (kept in this browser's localStorage, sent only to Anthropic).
-import { SHAPES, FINISHES, anchors } from "./parts.js?v=mvo8lw57";
+import { SHAPES, FINISHES, anchors } from "./parts.js?v=mvoad0pe";
 
 const SDK_URL = "https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk@0.131.0/+esm";
 const MODEL = "claude-opus-5-5";

@@ -2,8 +2,8 @@
 // file per uploaded 3D model, in the Drive "app data" folder: a hidden folder only this app can see.
 // The app asks only for the drive.appdata permission, so it can't read anything else in the Drive.
 // Nothing passes through any server of ours; the browser talks to Google directly.
-import { GOOGLE_CLIENT_ID } from "./config.js?v=mvo8lw57";
-import * as store from "./store.js?v=mvo8lw57";
+import { GOOGLE_CLIENT_ID } from "./config.js?v=mvoad0pe";
+import * as store from "./store.js?v=mvoad0pe";
 
 const SCOPE = "https://www.googleapis.com/auth/drive.appdata";
 const API = "https://www.googleapis.com/drive/v3/files";
@@ -109,16 +109,29 @@ async function syncOnce() {
 // Run a sync. interactive = started by a tap, so a sign-in popup is allowed if needed.
 export async function syncNow(interactive = false) {
   if (!available() || (!isOn() && !interactive)) return;
+  // A tap means "sign in and sync now". Get the token up front, straight from the click and before
+  // the in-flight guard below, for two reasons: the sign-in popup only opens while the browser still
+  // sees the click, and a stuck or slow background sync must not be able to swallow the tap. In
+  // needs-auth the token we hold is known bad, so drop it and force a fresh sign-in.
+  if (interactive && !running) {
+    if (state.status === "needs-auth") { token = null; try { sessionStorage.removeItem(TOKEN); } catch (e) {} }
+    if (!(token || savedToken())) {
+      set({ status: "syncing", error: "" });
+      try {
+        await requestToken(isOn() ? "select_account" : "consent");
+        try { localStorage.setItem(PREF, "on"); } catch (e) {}
+      } catch (e) {
+        if (e.code === "auth") set({ status: "needs-auth", error: "" });
+        else set({ status: "error", error: e.message || "Google sign-in didn't finish." });
+        return;
+      }
+    }
+  }
   if (running) { again = true; return running; }
   running = (async () => {
     try {
       token = token || savedToken();
-      if (!token) {
-        if (!interactive) { set({ status: "needs-auth" }); return; }
-        // Always use a prompt that shows UI. An empty prompt asks Google for a silent token, which
-        // can quietly never answer once a sign-in has expired, leaving "Tap to sync" doing nothing.
-        await requestToken(isOn() ? "select_account" : "consent");
-      }
+      if (!token) { set({ status: "needs-auth" }); return; }
       try { localStorage.setItem(PREF, "on"); } catch (e) {}
       set({ status: "syncing", error: "" });
       await syncOnce();
@@ -146,6 +159,7 @@ export function disconnect() {
 // Push local edits a few seconds after they happen, and pull when the page comes back into view.
 export function start() {
   if (!available()) return;
+  loadGIS().catch(() => {}); // warm it up now so the first tap can open the sign-in popup in time
   if (isOn()) { token = savedToken(); syncNow(false); }
   store.onChange((d, origin) => {
     if (origin !== "local" || !isOn()) return;
