@@ -1,8 +1,8 @@
-import * as store from "./store.js?v=mvock6uv";
-import { TEMPLATES, FINISHES, SUPRA_FRAME, detectTemplate, templateFor, templateKind, templateLabel, primsFor } from "./parts.js?v=mvock6uv";
-import { createGarage, yawFacing } from "./garage3d.js?v=mvock6uv";
-import { designPart, getKey, setKey } from "./ai.js?v=mvock6uv";
-import * as sync from "./sync.js?v=mvock6uv";
+import * as store from "./store.js?v=mvoevnd0";
+import { TEMPLATES, FINISHES, SUPRA_FRAME, detectTemplate, templateFor, templateKind, templateLabel, primsFor } from "./parts.js?v=mvoevnd0";
+import { createGarage, yawFacing } from "./garage3d.js?v=mvoevnd0";
+import { designPart, getKey, setKey } from "./ai.js?v=mvoevnd0";
+import * as sync from "./sync.js?v=mvoevnd0";
 
 // The garage holds every car's records; S.profile / S.log / S.items are the selected car's view.
 // Parts and log entries carry a carId (missing = the first car); tools are shared by all cars.
@@ -22,6 +22,19 @@ const fmtDate = (d) => { if (!d) return ""; const t = new Date(d + "T00:00:00");
 const today = () => new Date().toISOString().slice(0, 10);
 const nowISO = () => new Date().toISOString();
 const safeUrl = (u) => /^https?:\/\//i.test(u || "") ? u : "";
+
+// Suggest-install-videos preference: a global per-browser toggle (default on).
+const VIDEOS_PREF = "garage-log.installVideos";
+let showVideos = (() => { try { return localStorage.getItem(VIDEOS_PREF) !== "off"; } catch (e) { return true; } })();
+function setVideos(on) { showVideos = !!on; try { localStorage.setItem(VIDEOS_PREF, on ? "on" : "off"); } catch (e) {} }
+// Build a YouTube search for how to fit an item, using the car + its own details.
+function videoSearchUrl(it) {
+  const car = it.carId ? S.cars.find((c) => c.id === it.carId) : null;
+  const carTerms = car ? [car.year, car.make, car.model] : [];
+  const verb = it.kind === "tool" ? "how to use" : "installation";
+  const terms = [...carTerms, it.brand, it.partNumber, it.name, verb].filter(Boolean).join(" ");
+  return "https://www.youtube.com/results?search_query=" + encodeURIComponent(terms);
+}
 
 // Mirror a message into a screen-reader live region. assertive = interrupt (errors); else polite.
 function announce(msg, assertive) {
@@ -149,6 +162,7 @@ function itemRow(it, compact) {
         ${it.partNumber ? `<span class="pn">${esc(it.partNumber)}</span>` : ""}
         ${it.vendor ? `<span>${esc(it.vendor)}</span>` : ""}
         ${url ? `<a class="link" href="${esc(url)}" target="_blank" rel="noopener">Product page</a>` : ""}
+        ${showVideos ? `<a class="link" href="${esc(videoSearchUrl(it))}" target="_blank" rel="noopener">${it.kind === "tool" ? "How to use" : "How to install"}</a>` : ""}
       </span>
       ${!compact && it.notes ? `<span class="notes">${esc(it.notes)}</span>` : ""}
     </div>
@@ -538,8 +552,9 @@ $("modelRemove").addEventListener("click", () => {
 });
 
 /* ---------- settings: backup, AI key, start over ---------- */
-$("openSettings").addEventListener("click", () => { $("apiKey").value = getKey(); $("keyStatus").textContent = getKey() ? "A key is saved in this browser." : ""; $("importStatus").textContent = ""; $("settings").showModal(); });
+$("openSettings").addEventListener("click", () => { $("apiKey").value = getKey(); $("keyStatus").textContent = getKey() ? "A key is saved in this browser." : ""; $("importStatus").textContent = ""; $("videoToggle").checked = showVideos; $("settings").showModal(); });
 $("settingsClose").addEventListener("click", () => $("settings").close());
+$("videoToggle").addEventListener("change", () => { setVideos($("videoToggle").checked); render(); });
 $("saveKey").addEventListener("click", () => {
   const k = $("apiKey").value.trim();
   if (!/^sk-ant-/.test(k)) { $("keyStatus").textContent = "That doesn't look like an Anthropic API key (they start with sk-ant-)."; return; }
