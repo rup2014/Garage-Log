@@ -1,8 +1,8 @@
-import * as store from "./store.js?v=mvo60qvi";
-import { TEMPLATES, FINISHES, SUPRA_FRAME, detectTemplate, templateFor, templateKind, templateLabel, primsFor } from "./parts.js?v=mvo60qvi";
-import { createGarage, yawFacing } from "./garage3d.js?v=mvo60qvi";
-import { designPart, getKey, setKey } from "./ai.js?v=mvo60qvi";
-import * as sync from "./sync.js?v=mvo60qvi";
+import * as store from "./store.js?v=mvo7jy6r";
+import { TEMPLATES, FINISHES, SUPRA_FRAME, detectTemplate, templateFor, templateKind, templateLabel, primsFor } from "./parts.js?v=mvo7jy6r";
+import { createGarage, yawFacing } from "./garage3d.js?v=mvo7jy6r";
+import { designPart, getKey, setKey } from "./ai.js?v=mvo7jy6r";
+import * as sync from "./sync.js?v=mvo7jy6r";
 
 // The garage holds every car's records; S.profile / S.log / S.items are the selected car's view.
 // Parts and log entries carry a carId (missing = the first car); tools are shared by all cars.
@@ -23,24 +23,47 @@ const today = () => new Date().toISOString().slice(0, 10);
 const nowISO = () => new Date().toISOString();
 const safeUrl = (u) => /^https?:\/\//i.test(u || "") ? u : "";
 
-function toast(msg) {
+// Mirror a message into a screen-reader live region. assertive = interrupt (errors); else polite.
+function announce(msg, assertive) {
+  const el = $(assertive ? "liveAssertive" : "livePolite");
+  if (!el) return;
+  el.textContent = ""; // clear first so repeating an identical message still re-announces
+  requestAnimationFrame(() => { el.textContent = msg; });
+}
+function toast(msg, assertive) {
+  announce(msg, assertive);
   const t = document.createElement("div"); t.className = "toast"; t.textContent = msg;
   document.body.appendChild(t); setTimeout(() => t.remove(), 2400);
 }
 function save(fn) {
   try { fn(); return true; }
-  catch (e) { toast(e.code === "storage_full" ? "This browser's storage is full. Download a backup, then delete old entries." : "Couldn't save. Try again."); return false; }
+  catch (e) { toast(e.code === "storage_full" ? "This browser's storage is full. Download a backup, then delete old entries." : "Couldn't save. Try again.", true); return false; }
 }
 
 /* ---------- tabs ---------- */
 const TABS = ["overview", "log", "parts", "wishlist"];
 function showTab(name) {
   if (!TABS.includes(name)) name = "overview";
-  TABS.forEach((t) => { $(t).hidden = t !== name; $("tab-" + t).setAttribute("aria-selected", t === name); });
+  TABS.forEach((t) => {
+    const sel = t === name, tab = $("tab-" + t);
+    $(t).hidden = !sel;
+    tab.setAttribute("aria-selected", sel);
+    tab.tabIndex = sel ? 0 : -1; // roving tabindex: the tablist is a single Tab stop
+  });
   try { history.replaceState(null, "", "#" + name); } catch (e) {}
 }
 TABS.forEach((t) => $("tab-" + t).addEventListener("click", () => showTab(t)));
 document.querySelectorAll("[data-go]").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); showTab(a.dataset.go); }));
+// Arrow / Home / End move between tabs (WAI-ARIA tab pattern, automatic activation).
+document.querySelector('nav.tabs[role="tablist"]').addEventListener("keydown", (e) => {
+  const step = { ArrowRight: 1, ArrowLeft: -1, Home: "first", End: "last" }[e.key];
+  if (step === undefined) return;
+  e.preventDefault();
+  const cur = Math.max(0, TABS.findIndex((t) => $("tab-" + t).getAttribute("aria-selected") === "true"));
+  const next = step === "first" ? 0 : step === "last" ? TABS.length - 1 : (cur + step + TABS.length) % TABS.length;
+  showTab(TABS[next]);
+  $("tab-" + TABS[next]).focus();
+});
 function wireSeg(id, key) {
   $(id).addEventListener("click", (e) => {
     const b = e.target.closest("button"); if (!b) return;

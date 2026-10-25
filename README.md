@@ -72,6 +72,8 @@ privacy.html        Privacy Policy
 terms.html          Terms of Use
 ```
 
+The flat layout is intentional: there's no build step, so the browser loads these ES modules directly from the repo root (the standard GitHub Pages pattern). Each file is one focused module, so there's deliberately no `src/`/`dist/` split or bundler.
+
 The page's Content-Security-Policy only allows code from the site itself, plus Google sign-in and Drive (for sync) and Anthropic's API and the jsDelivr copy of its SDK (for AI design).
 
 ## Credits, licenses and policies

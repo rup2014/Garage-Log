@@ -11,8 +11,8 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://accounts.google.com/gsi/client; connect-src 'self' blob: https://api.anthropic.com https://www.googleapis.com https://accounts.google.com https://cdn.jsdelivr.net; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; font-src 'self'; frame-src https://accounts.google.com; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231d5aa0'/%3E%3Cpath d='M6 19l3-6c.4-.8 1.2-1.3 2.1-1.3h9.8c.9 0 1.7.5 2.1 1.3l3 6v4a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-1H10v1a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1z' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="css/fonts.css?v=mvo60qvi">
-<link rel="stylesheet" href="css/style.css?v=mvo60qvi">
+<link rel="stylesheet" href="css/fonts.css?v=mvo7jy6r">
+<link rel="stylesheet" href="css/style.css?v=mvo7jy6r">
 </head>
 <body>
 <header class="top">
@@ -31,10 +31,10 @@
       </div>
     </div>
     <nav class="tabs" role="tablist" aria-label="Sections">
-      <button role="tab" id="tab-overview" aria-controls="overview" aria-selected="true" type="button">Overview</button>
-      <button role="tab" id="tab-log" aria-controls="log" aria-selected="false" type="button">Service &amp; mods<span class="count" id="cLog"></span></button>
-      <button role="tab" id="tab-parts" aria-controls="parts" aria-selected="false" type="button">Parts &amp; tools<span class="count" id="cParts"></span></button>
-      <button role="tab" id="tab-wishlist" aria-controls="wishlist" aria-selected="false" type="button">Wishlist<span class="count" id="cWish"></span></button>
+      <button role="tab" id="tab-overview" aria-controls="overview" aria-selected="true" tabindex="0" type="button">Overview</button>
+      <button role="tab" id="tab-log" aria-controls="log" aria-selected="false" tabindex="-1" type="button">Service &amp; mods<span class="count" id="cLog"></span></button>
+      <button role="tab" id="tab-parts" aria-controls="parts" aria-selected="false" tabindex="-1" type="button">Parts &amp; tools<span class="count" id="cParts"></span></button>
+      <button role="tab" id="tab-wishlist" aria-controls="wishlist" aria-selected="false" tabindex="-1" type="button">Wishlist<span class="count" id="cWish"></span></button>
     </nav>
   </div>
 </header>
@@ -56,9 +56,9 @@
 
   <section role="tabpanel" id="overview" aria-labelledby="tab-overview">
     <div class="garage">
-      <div class="viewer" id="garage3d">
+      <div class="viewer" id="garage3d" role="img" aria-label="3D preview of your car. The installed mods and your build level are listed as text in the Build panel beside it.">
         <span class="viewer-tag" id="viewerTag"></span>
-        <span class="viewer-hint">Drag to turn · double-click to reset</span>
+        <span class="viewer-hint" aria-hidden="true">Drag to turn · double-click to reset</span>
         <div class="viewer-fallback" id="viewerFallback" hidden>The 3D garage needs WebGL, which this browser has turned off.</div>
         <div class="viewer-empty" id="viewerEmpty" hidden>
           <strong>No 3D model for this car yet</strong>
@@ -108,7 +108,7 @@
       <div><h2>Service &amp; mods</h2><p>Every oil change, repair and upgrade, with the date and odometer reading.</p></div>
       <div class="tools-row">
         <input type="search" class="search" id="logSearch" placeholder="Search service &amp; mods…" aria-label="Search service and mods" autocomplete="off" spellcheck="false">
-        <div class="seg" id="logFilter">
+        <div class="seg" id="logFilter" role="group" aria-label="Filter service &amp; mods">
           <button type="button" data-f="all" aria-pressed="true">All</button>
           <button type="button" data-f="service" aria-pressed="false">Service</button>
           <button type="button" data-f="mod" aria-pressed="false">Mods</button>
@@ -124,7 +124,7 @@
       <div><h2>Parts &amp; tools</h2><p>What you've ordered or own, and whether it's on the car yet. Tools are shared by all your cars.</p></div>
       <div class="tools-row">
         <input type="search" class="search" id="partsSearch" placeholder="Search parts &amp; tools…" aria-label="Search parts and tools" autocomplete="off" spellcheck="false">
-        <div class="seg" id="partsFilter">
+        <div class="seg" id="partsFilter" role="group" aria-label="Filter parts &amp; tools">
           <button type="button" data-f="all" aria-pressed="true">All</button>
           <button type="button" data-f="part" aria-pressed="false">Parts</button>
           <button type="button" data-f="tool" aria-pressed="false">Tools</button>
@@ -140,7 +140,7 @@
       <div><h2>Wishlist</h2><p>Parts and tools you plan to buy. Mark one bought and it moves to Parts &amp; tools.</p></div>
       <div class="tools-row">
         <input type="search" class="search" id="wishSearch" placeholder="Search wishlist…" aria-label="Search wishlist" autocomplete="off" spellcheck="false">
-        <div class="seg" id="wishFilter">
+        <div class="seg" id="wishFilter" role="group" aria-label="Filter wishlist">
           <button type="button" data-f="all" aria-pressed="true">All</button>
           <button type="button" data-f="part" aria-pressed="false">Parts</button>
           <button type="button" data-f="tool" aria-pressed="false">Tools</button>
@@ -159,7 +159,7 @@
   </div>
 </footer>
 
-<dialog id="dlg">
+<dialog id="dlg" aria-labelledby="dlgTitle">
   <form id="dlgForm" method="dialog" novalidate>
     <h2 id="dlgTitle">Add entry</h2>
     <div class="grid" id="dlgFields"></div>
@@ -174,9 +174,9 @@
   </form>
 </dialog>
 
-<dialog id="settings">
+<dialog id="settings" aria-labelledby="settingsTitle">
   <form id="settingsForm" method="dialog" novalidate>
-    <h2>Settings</h2>
+    <h2 id="settingsTitle">Settings</h2>
     <fieldset class="set-group" id="syncGroup">
       <legend>Sync across devices</legend>
       <p class="set-note" id="syncIntro">Keep your garage in step on your phone and computer. It's saved in a hidden app folder in your own Google Drive; Garage Log can't see anything else in your Drive, and no one else gets a copy.</p>
@@ -211,8 +211,12 @@
   </form>
 </dialog>
 
-<script src="vendor/three/three.min.js?v=mvo60qvi"></script>
-<script src="vendor/three/GLTFLoader.js?v=mvo60qvi"></script>
-<script type="module" src="js/app.js?v=mvo60qvi"></script>
+<!-- Screen-reader announcements: toasts and errors are mirrored here (see announce() in app.js). -->
+<div id="livePolite" class="sr-only" aria-live="polite" role="status"></div>
+<div id="liveAssertive" class="sr-only" aria-live="assertive" role="alert"></div>
+
+<script src="vendor/three/three.min.js?v=mvo7jy6r"></script>
+<script src="vendor/three/GLTFLoader.js?v=mvo7jy6r"></script>
+<script type="module" src="js/app.js?v=mvo7jy6r"></script>
 </body>
 </html>
