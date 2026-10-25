@@ -2,6 +2,8 @@
 
 Track your cars' services, mods, parts and tools, plan a wishlist, and watch each mod appear on your car in a 3D garage.
 
+**Use it:** https://rup2014.github.io/Garage-Log/
+
 - **Multiple cars.** Each car has its own service history, parts, wishlist and odometer. Tools are shared by all your cars.
 - **3D garage.** A built-in Toyota GR Supra (A90) model, or upload any car as a `.glb` file. Installed parts appear on the car; wishlist parts can be previewed in blue. Your build level goes up as you install mods.
 - **Part library.** Type a part's name and Garage Log builds a matching 3D part: front lips, splitters, canards, side skirts, diffusers, trunk spoilers, GT wings, roof spoilers, hood scoops and vents, fender vents, mirror caps, wind deflectors, exhaust tips, mud flaps, roof racks, light bars, tow straps, plate relocation. Tint, lowering, wheel spacers, paint protection and wraps change the car itself. Every part has finish, size and position controls.
