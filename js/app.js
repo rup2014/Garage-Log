@@ -1,8 +1,8 @@
-import * as store from "./store.js?v=mvo5q5a6";
-import { TEMPLATES, FINISHES, SUPRA_FRAME, detectTemplate, templateFor, templateKind, templateLabel, primsFor } from "./parts.js?v=mvo5q5a6";
-import { createGarage, yawFacing } from "./garage3d.js?v=mvo5q5a6";
-import { designPart, getKey, setKey } from "./ai.js?v=mvo5q5a6";
-import * as sync from "./sync.js?v=mvo5q5a6";
+import * as store from "./store.js?v=mvo5wmhu";
+import { TEMPLATES, FINISHES, SUPRA_FRAME, detectTemplate, templateFor, templateKind, templateLabel, primsFor } from "./parts.js?v=mvo5wmhu";
+import { createGarage, yawFacing } from "./garage3d.js?v=mvo5wmhu";
+import { designPart, getKey, setKey } from "./ai.js?v=mvo5wmhu";
+import * as sync from "./sync.js?v=mvo5wmhu";
 
 // The garage holds every car's records; S.profile / S.log / S.items are the selected car's view.
 // Parts and log entries carry a carId (missing = the first car); tools are shared by all cars.
@@ -129,7 +129,7 @@ function itemRow(it, compact) {
       </span>
       ${!compact && it.notes ? `<span class="notes">${esc(it.notes)}</span>` : ""}
     </div>
-    <div class="side">${total ? `<span class="cost">${st === "wishlist" ? "~" : ""}${money(total)}</span>` : ""}${!compact ? `<span class="actions">${st === "wishlist" ? `<button class="btn small" data-bought="${esc(it.id)}" type="button">Mark bought</button>` : ""}${(st === "owned" || st === "ordered") && it.kind !== "tool" ? `<button class="btn small" data-install="${esc(it.id)}" type="button">Install</button>` : ""}<button class="btn small" data-edit-item="${esc(it.id)}" type="button">Edit</button></span>` : ""}</div>
+    <div class="side">${total ? `<span class="cost">${st === "wishlist" ? "~" : ""}${money(total)}</span>` : ""}${!compact ? `<span class="actions">${st === "wishlist" ? `<button class="btn small" data-bought="${esc(it.id)}" type="button">Mark bought</button>` : ""}${(st === "owned" || st === "ordered") && it.kind !== "tool" ? `<button class="btn small" data-install="${esc(it.id)}" type="button">Install</button>` : ""}${st === "owned" || st === "ordered" ? `<button class="btn small" data-unbuy="${esc(it.id)}" type="button">Move to wishlist</button>` : ""}<button class="btn small" data-edit-item="${esc(it.id)}" type="button">Edit</button></span>` : ""}</div>
   </div>`;
 }
 const empty = (title, body, newKind, label) => `<div class="empty"><strong>${title}</strong><span>${body}</span>${newKind ? `<button class="btn primary" data-new="${newKind}" type="button">${label}</button>` : ""}</div>`;
@@ -349,6 +349,10 @@ document.addEventListener("click", (e) => {
   else if (t.dataset.editLog) openForm("log", S.allLog.find((x) => x.id === t.dataset.editLog) || {}, t.dataset.editLog);
   else if (t.dataset.editItem) openItem(t.dataset.editItem);
   else if (t.dataset.bought) { openItem(t.dataset.bought, { status: "owned", date: today() }); $("dlgTitle").textContent = "Mark as bought"; }
+  else if (t.dataset.unbuy) {
+    const it = S.allItems.find((x) => x.id === t.dataset.unbuy); if (!it) return;
+    if (save(() => store.patch("items", it.id, { status: "wishlist", priority: it.priority || "medium" }))) toast("Moved to wishlist");
+  }
   else if (t.dataset.install) {
     const it = S.allItems.find((x) => x.id === t.dataset.install); if (!it) return;
     const qty = num(it.qty) > 1 ? num(it.qty) : 1;

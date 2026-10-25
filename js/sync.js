@@ -2,8 +2,8 @@
 // file per uploaded 3D model, in the Drive "app data" folder: a hidden folder only this app can see.
 // The app asks only for the drive.appdata permission, so it can't read anything else in the Drive.
 // Nothing passes through any server of ours; the browser talks to Google directly.
-import { GOOGLE_CLIENT_ID } from "./config.js?v=mvo5q5a6";
-import * as store from "./store.js?v=mvo5q5a6";
+import { GOOGLE_CLIENT_ID } from "./config.js?v=mvo5wmhu";
+import * as store from "./store.js?v=mvo5wmhu";
 
 const SCOPE = "https://www.googleapis.com/auth/drive.appdata";
 const API = "https://www.googleapis.com/drive/v3/files";
