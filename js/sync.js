@@ -2,8 +2,8 @@
 // file per uploaded 3D model, in the Drive "app data" folder: a hidden folder only this app can see.
 // The app asks only for the drive.appdata permission, so it can't read anything else in the Drive.
 // Nothing passes through any server of ours; the browser talks to Google directly.
-import { GOOGLE_CLIENT_ID } from "./config.js?v=mvo7jy6r";
-import * as store from "./store.js?v=mvo7jy6r";
+import { GOOGLE_CLIENT_ID } from "./config.js?v=mvo8lw57";
+import * as store from "./store.js?v=mvo8lw57";
 
 const SCOPE = "https://www.googleapis.com/auth/drive.appdata";
 const API = "https://www.googleapis.com/drive/v3/files";
@@ -37,20 +37,26 @@ function loadGIS() {
   }));
 }
 // Getting a token opens Google's sign-in popup when needed, so call it from a tap or click.
+// The watchdog matters: with an empty prompt Google sometimes answers with neither callback,
+// so without it the request (and the whole sync) would hang until the page was reloaded.
 async function requestToken(prompt) {
   const google = await loadGIS();
   return new Promise((resolve, reject) => {
+    let done = false;
+    const settle = (fn) => (v) => { if (done) return; done = true; clearTimeout(watchdog); fn(v); };
+    const ok = settle(resolve), fail = settle(reject);
+    const watchdog = setTimeout(() => fail(new Error("Google sign-in didn't respond. Please try again.")), 120000);
     tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: GOOGLE_CLIENT_ID,
       scope: SCOPE,
       callback: (r) => {
-        if (r.error) return reject(new Error(r.error === "access_denied" ? "Google Drive access wasn't allowed." : "Google sign-in didn't finish."));
-        if (!google.accounts.oauth2.hasGrantedAllScopes(r, SCOPE)) return reject(new Error("Garage Log needs permission to use its Drive app folder to sync."));
+        if (r.error) return fail(new Error(r.error === "access_denied" ? "Google Drive access wasn't allowed." : "Google sign-in didn't finish."));
+        if (!google.accounts.oauth2.hasGrantedAllScopes(r, SCOPE)) return fail(new Error("Garage Log needs permission to use its Drive app folder to sync."));
         token = r.access_token;
         try { sessionStorage.setItem(TOKEN, JSON.stringify({ token, exp: Date.now() + (Number(r.expires_in) || 3600) * 1000 })); } catch (e) {}
-        resolve(token);
+        ok(token);
       },
-      error_callback: (e) => reject(new Error(e && e.type === "popup_closed" ? "The Google sign-in window was closed." : "Google sign-in was blocked. Allow pop-ups for this site and try again.")),
+      error_callback: (e) => fail(new Error(e && e.type === "popup_closed" ? "The Google sign-in window was closed." : "Google sign-in was blocked. Allow pop-ups for this site and try again.")),
     });
     tokenClient.requestAccessToken({ prompt });
   });
@@ -109,7 +115,9 @@ export async function syncNow(interactive = false) {
       token = token || savedToken();
       if (!token) {
         if (!interactive) { set({ status: "needs-auth" }); return; }
-        await requestToken(isOn() ? "" : "consent");
+        // Always use a prompt that shows UI. An empty prompt asks Google for a silent token, which
+        // can quietly never answer once a sign-in has expired, leaving "Tap to sync" doing nothing.
+        await requestToken(isOn() ? "select_account" : "consent");
       }
       try { localStorage.setItem(PREF, "on"); } catch (e) {}
       set({ status: "syncing", error: "" });

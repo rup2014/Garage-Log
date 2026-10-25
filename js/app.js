@@ -1,8 +1,8 @@
-import * as store from "./store.js?v=mvo7jy6r";
-import { TEMPLATES, FINISHES, SUPRA_FRAME, detectTemplate, templateFor, templateKind, templateLabel, primsFor } from "./parts.js?v=mvo7jy6r";
-import { createGarage, yawFacing } from "./garage3d.js?v=mvo7jy6r";
-import { designPart, getKey, setKey } from "./ai.js?v=mvo7jy6r";
-import * as sync from "./sync.js?v=mvo7jy6r";
+import * as store from "./store.js?v=mvo8lw57";
+import { TEMPLATES, FINISHES, SUPRA_FRAME, detectTemplate, templateFor, templateKind, templateLabel, primsFor } from "./parts.js?v=mvo8lw57";
+import { createGarage, yawFacing } from "./garage3d.js?v=mvo8lw57";
+import { designPart, getKey, setKey } from "./ai.js?v=mvo8lw57";
+import * as sync from "./sync.js?v=mvo8lw57";
 
 // The garage holds every car's records; S.profile / S.log / S.items are the selected car's view.
 // Parts and log entries carry a carId (missing = the first car); tools are shared by all cars.
