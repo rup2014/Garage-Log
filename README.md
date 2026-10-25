@@ -29,6 +29,10 @@ Then open the address it prints. (Opening `index.html` straight from disk won't 
 2. In the repository, go to **Settings → Pages**, set **Source** to *Deploy from a branch*, and pick `main` and `/ (root)`.
 3. Your site appears at `https://<your-username>.github.io/<repository-name>/` within a minute or two.
 
+### Releasing changes
+
+GitHub Pages lets browsers cache files for 10 minutes. Before committing a release, run `node tools/stamp.mjs`: it adds a fresh `?v=` version to every local script, stylesheet and module import so visitors get the new files right away.
+
 ### Turn on Google Drive sync (for your own copy)
 
 Sync needs a Google OAuth client ID for your site's address. It's free.
