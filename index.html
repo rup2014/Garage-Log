@@ -11,8 +11,8 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://accounts.google.com/gsi/client; connect-src 'self' blob: https://api.anthropic.com https://www.googleapis.com https://accounts.google.com https://cdn.jsdelivr.net; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; font-src 'self'; frame-src https://accounts.google.com; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231d5aa0'/%3E%3Cpath d='M6 19l3-6c.4-.8 1.2-1.3 2.1-1.3h9.8c.9 0 1.7.5 2.1 1.3l3 6v4a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-1H10v1a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1z' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="css/fonts.css?v=mvo50fl6">
-<link rel="stylesheet" href="css/style.css?v=mvo50fl6">
+<link rel="stylesheet" href="css/fonts.css?v=mvo5q5a6">
+<link rel="stylesheet" href="css/style.css?v=mvo5q5a6">
 </head>
 <body>
 <header class="top">
@@ -107,6 +107,7 @@
     <div class="section-head">
       <div><h2>Service &amp; mods</h2><p>Every oil change, repair and upgrade, with the date and odometer reading.</p></div>
       <div class="tools-row">
+        <input type="search" class="search" id="logSearch" placeholder="Search service &amp; mods…" aria-label="Search service and mods" autocomplete="off" spellcheck="false">
         <div class="seg" id="logFilter">
           <button type="button" data-f="all" aria-pressed="true">All</button>
           <button type="button" data-f="service" aria-pressed="false">Service</button>
@@ -122,6 +123,7 @@
     <div class="section-head">
       <div><h2>Parts &amp; tools</h2><p>What you've ordered or own, and whether it's on the car yet. Tools are shared by all your cars.</p></div>
       <div class="tools-row">
+        <input type="search" class="search" id="partsSearch" placeholder="Search parts &amp; tools…" aria-label="Search parts and tools" autocomplete="off" spellcheck="false">
         <div class="seg" id="partsFilter">
           <button type="button" data-f="all" aria-pressed="true">All</button>
           <button type="button" data-f="part" aria-pressed="false">Parts</button>
@@ -137,6 +139,7 @@
     <div class="section-head">
       <div><h2>Wishlist</h2><p>Parts and tools you plan to buy. Mark one bought and it moves to Parts &amp; tools.</p></div>
       <div class="tools-row">
+        <input type="search" class="search" id="wishSearch" placeholder="Search wishlist…" aria-label="Search wishlist" autocomplete="off" spellcheck="false">
         <button class="btn primary" type="button" data-new="wishlist">Add to wishlist</button>
       </div>
     </div>
@@ -203,8 +206,8 @@
   </form>
 </dialog>
 
-<script src="vendor/three/three.min.js?v=mvo50fl6"></script>
-<script src="vendor/three/GLTFLoader.js?v=mvo50fl6"></script>
-<script type="module" src="js/app.js?v=mvo50fl6"></script>
+<script src="vendor/three/three.min.js?v=mvo5q5a6"></script>
+<script src="vendor/three/GLTFLoader.js?v=mvo5q5a6"></script>
+<script type="module" src="js/app.js?v=mvo5q5a6"></script>
 </body>
 </html>

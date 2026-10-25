@@ -1,12 +1,12 @@
-import * as store from "./store.js?v=mvo50fl6";
-import { TEMPLATES, FINISHES, SUPRA_FRAME, detectTemplate, templateFor, templateKind, templateLabel, primsFor } from "./parts.js?v=mvo50fl6";
-import { createGarage, yawFacing } from "./garage3d.js?v=mvo50fl6";
-import { designPart, getKey, setKey } from "./ai.js?v=mvo50fl6";
-import * as sync from "./sync.js?v=mvo50fl6";
+import * as store from "./store.js?v=mvo5q5a6";
+import { TEMPLATES, FINISHES, SUPRA_FRAME, detectTemplate, templateFor, templateKind, templateLabel, primsFor } from "./parts.js?v=mvo5q5a6";
+import { createGarage, yawFacing } from "./garage3d.js?v=mvo5q5a6";
+import { designPart, getKey, setKey } from "./ai.js?v=mvo5q5a6";
+import * as sync from "./sync.js?v=mvo5q5a6";
 
 // The garage holds every car's records; S.profile / S.log / S.items are the selected car's view.
 // Parts and log entries carry a carId (missing = the first car); tools are shared by all cars.
-const S = { cars: [], allLog: [], allItems: [], carId: null, profile: {}, log: [], items: [], logF: "all", partsF: "all", preview: new Set(), prevInstalled: new Set(), loaded: false };
+const S = { cars: [], allLog: [], allItems: [], carId: null, profile: {}, log: [], items: [], logF: "all", partsF: "all", logQ: "", partsQ: "", wishQ: "", preview: new Set(), prevInstalled: new Set(), loaded: false };
 try { S.carId = localStorage.getItem("garage-log.car"); } catch (e) {}
 const DEFAULT_PAINT = "#121316";
 const MAX_MODEL_MB = 60;
@@ -50,6 +50,10 @@ function wireSeg(id, key) {
   });
 }
 wireSeg("logFilter", "logF"); wireSeg("partsFilter", "partsF");
+function wireSearch(id, key) {
+  $(id).addEventListener("input", (e) => { S[key] = e.target.value; render(); });
+}
+wireSearch("logSearch", "logQ"); wireSearch("partsSearch", "partsQ"); wireSearch("wishSearch", "wishQ");
 
 /* ---------- cars ---------- */
 const carName = (c) => c.nickname || [c.year, c.make, c.model].filter(Boolean).join(" ") || "My car";
@@ -132,6 +136,14 @@ const empty = (title, body, newKind, label) => `<div class="empty"><strong>${tit
 const byDateDesc = (a, b) => (b.date || "").localeCompare(a.date || "") || num(b.mileage) - num(a.mileage);
 const prRank = { high: 0, medium: 1, low: 2 };
 const byPriority = (a, b) => (prRank[a.priority] ?? 1) - (prRank[b.priority] ?? 1) || (a.name || "").localeCompare(b.name || "");
+function matches(q, text) {
+  const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+  if (!terms.length) return true;
+  const hay = text.toLowerCase();
+  return terms.every((t) => hay.includes(t));
+}
+const logText = (e) => [e.title, e.shop, e.parts, e.notes, e.type].filter(Boolean).join(" ");
+const itemText = (i) => [i.name, i.brand, i.partNumber, i.vendor, i.notes, i.kind, i.priority].filter(Boolean).join(" ");
 
 function render() {
   selectView();
@@ -159,15 +171,22 @@ function render() {
 
   $("recentLog").innerHTML = log.length ? `<div class="records flat">${log.slice(0, 5).map((e) => logRow(e, true)).join("")}</div>` : empty("No work logged yet", "Add your last oil change or a mod you've done.", "log", "Add entry");
   $("recentWish").innerHTML = wish.length ? `<div class="records flat">${wish.slice(0, 5).map((i) => itemRow(i, true)).join("")}</div>` : empty("Nothing on the list", "Add a part or tool you plan to buy.", "wishlist", "Add to wishlist");
-  const logShown = S.logF === "all" ? log : log.filter((e) => (S.logF === "mod") === (e.type === "mod"));
+  const logShown = (S.logF === "all" ? log : log.filter((e) => (S.logF === "mod") === (e.type === "mod"))).filter((e) => matches(S.logQ, logText(e)));
+  const logQ = S.logQ.trim();
   $("logList").innerHTML = logShown.length ? `<div class="records">${logShown.map((e) => logRow(e)).join("")}</div>`
-    : empty(log.length ? "Nothing matches this filter" : "Your service record is empty", log.length ? "Try another filter." : "Log services and mods with date, mileage and cost.", log.length ? "" : "log", "Add entry");
-  const partsShown = S.partsF === "all" ? owned : owned.filter((i) => (i.kind || "part") === S.partsF);
+    : log.length ? empty(logQ ? "Nothing matches your search" : "Nothing matches this filter", logQ ? "Try a different search or filter." : "Try another filter.", "")
+    : empty("Your service record is empty", "Log services and mods with date, mileage and cost.", "log", "Add entry");
+  const partsShown = (S.partsF === "all" ? owned : owned.filter((i) => (i.kind || "part") === S.partsF)).filter((i) => matches(S.partsQ, itemText(i)));
+  const partsQ = S.partsQ.trim();
   $("partsList").innerHTML = partsShown.length ? `<div class="records">${partsShown.map((i) => itemRow(i)).join("")}</div>
     <div class="total-line"><span>${partsShown.length} item${partsShown.length > 1 ? "s" : ""}</span><span>Total <b>${money(sum(partsShown, lineTotal))}</b></span></div>`
-    : empty(owned.length ? "Nothing matches this filter" : "No purchases yet", owned.length ? "Try another filter." : "Record parts and tools you've bought, with price and part number.", owned.length ? "" : "owned", "Add purchase");
-  $("wishList").innerHTML = wish.length ? `<div class="records">${wish.map((i) => itemRow(i)).join("")}</div>
-    <div class="total-line"><span>${wish.length} item${wish.length > 1 ? "s" : ""}</span><span>Estimated <b>${money(sum(wish, lineTotal))}</b></span></div>`
+    : owned.length ? empty(partsQ ? "Nothing matches your search" : "Nothing matches this filter", partsQ ? "Try a different search or filter." : "Try another filter.", "")
+    : empty("No purchases yet", "Record parts and tools you've bought, with price and part number.", "owned", "Add purchase");
+  const wishShown = wish.filter((i) => matches(S.wishQ, itemText(i)));
+  const wishQ = S.wishQ.trim();
+  $("wishList").innerHTML = wishShown.length ? `<div class="records">${wishShown.map((i) => itemRow(i)).join("")}</div>
+    <div class="total-line"><span>${wishShown.length} item${wishShown.length > 1 ? "s" : ""}</span><span>Estimated <b>${money(sum(wishShown, lineTotal))}</b></span></div>`
+    : wish.length ? empty("Nothing matches your search", "Try a different search.", "")
     : empty("Your wishlist is empty", "Add parts and tools you plan to buy, with a link and expected price.", "wishlist", "Add to wishlist");
   renderBuild();
 }
