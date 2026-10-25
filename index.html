@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Garage Log</title>
+<meta name="description" content="Track your cars' services, mods, parts and tools, with a 3D garage that shows each mod you install. Free and open source; your data stays in your browser.">
+<meta name="theme-color" content="#1d5aa0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231d5aa0'/%3E%3Cpath d='M6 19l3-6c.4-.8 1.2-1.3 2.1-1.3h9.8c.9 0 1.7.5 2.1 1.3l3 6v4a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-1H10v1a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1z' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <div class="car">
+        <h1 class="car-pick"><select id="carSelect" aria-label="Choose a car"></select><span class="car-chev" aria-hidden="true">▾</span></h1>
+        <span class="sub" id="carSub"></span>
+      </div>
+      <div class="odo">
+        <span class="odo-digits" id="odoDigits" title="Current odometer"></span>
+        <span class="odo-unit" id="odoUnit">mi</span>
+        <button class="btn small" id="editCar" type="button">Edit car</button>
+        <button class="btn small" id="openSettings" type="button">Settings</button>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" id="tab-overview" aria-controls="overview" aria-selected="true" type="button">Overview</button>
+      <button role="tab" id="tab-log" aria-controls="log" aria-selected="false" type="button">Service &amp; mods<span class="count" id="cLog"></span></button>
+      <button role="tab" id="tab-parts" aria-controls="parts" aria-selected="false" type="button">Parts &amp; tools<span class="count" id="cParts"></span></button>
+      <button role="tab" id="tab-wishlist" aria-controls="wishlist" aria-selected="false" type="button">Wishlist<span class="count" id="cWish"></span></button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="notice" id="storeNotice" hidden></div>
+
+  <section class="welcome" id="welcome" hidden>
+    <h2>Your garage, on your device</h2>
+    <p>Log services and mods, track parts and tools, plan a wishlist, and watch each mod appear on your car in 3D. Everything is saved in this browser. Nothing is sent anywhere unless you turn on AI part design.</p>
+    <div class="tools-row">
+      <button class="btn primary" type="button" id="welcomeAdd">Add your car</button>
+      <button class="btn" type="button" id="welcomeDemo">Try the demo garage</button>
+      <button class="btn" type="button" id="welcomeImport">Import a backup</button>
+    </div>
+  </section>
+
+  <section role="tabpanel" id="overview" aria-labelledby="tab-overview">
+    <div class="garage">
+      <div class="viewer" id="garage3d">
+        <span class="viewer-tag" id="viewerTag"></span>
+        <span class="viewer-hint">Drag to turn · double-click to reset</span>
+        <div class="viewer-fallback" id="viewerFallback" hidden>The 3D garage needs WebGL, which this browser has turned off.</div>
+        <div class="viewer-empty" id="viewerEmpty" hidden>
+          <strong>No 3D model for this car yet</strong>
+          <span>Upload a .glb file of your car. Sketchfab and similar sites offer car models with a glTF Binary (.glb) download.</span>
+          <button class="btn primary" type="button" id="viewerEmptyBtn">Upload 3D model</button>
+        </div>
+        <div class="viewer-tools" id="viewerTools" hidden>
+          <button class="btn small" type="button" id="modelUpload">Use my own model</button>
+          <button class="btn small" type="button" id="modelTurn" title="Turn the model a quarter turn">Turn 90°</button>
+          <button class="btn small danger" type="button" id="modelRemove">Remove</button>
+        </div>
+        <div class="model-status" id="modelStatus" role="status" hidden></div>
+        <input type="file" id="modelFile" accept=".glb,model/gltf-binary" hidden>
+      </div>
+      <aside class="build" aria-label="Build progress">
+        <div class="build-head"><span class="label">Build</span><span class="lvl">Level <b id="lvl">0</b></span></div>
+        <div class="meter" role="progressbar" aria-label="Planned mods installed" aria-valuemin="0" aria-valuemax="100" id="meter"><span id="meterFill"></span></div>
+        <span class="hint" id="meterText"></span>
+        <label class="toggle"><input type="checkbox" id="previewAll"> Preview wishlist on the car</label>
+        <ul class="slots" id="slots"></ul>
+        <span class="label garage-label">Garage</span>
+        <ul class="slots" id="gslots"></ul>
+        <p class="credit" id="creditCustom" hidden></p>
+        <p class="credit" id="creditBuiltin" hidden>Supra model: <a href="https://sketchfab.com/3d-models/toyota-supra-mk5-a90-30528ef37af844919074498f979b9515" target="_blank" rel="noopener">"Toyota Supra MK5 A90"</a> by <a href="https://sketchfab.com/pryanex" target="_blank" rel="noopener">pryanex</a>, licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>, simplified for the web.</p>
+      </aside>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="label">Spent on service</span><span class="val" id="sService">—</span><span class="hint" id="hService"></span></div>
+      <div class="stat"><span class="label">Spent on mods</span><span class="val" id="sMods">—</span><span class="hint" id="hMods"></span></div>
+      <div class="stat"><span class="label">Parts &amp; tools bought</span><span class="val" id="sBought">—</span><span class="hint" id="hBought"></span></div>
+      <div class="stat"><span class="label">Wishlist estimate</span><span class="val" id="sWish">—</span><span class="hint" id="hWish"></span></div>
+    </div>
+    <div class="two">
+      <div class="panel">
+        <h3>Recent work <a data-go="log" href="#log">See all</a></h3>
+        <div id="recentLog"></div>
+      </div>
+      <div class="panel">
+        <h3>Next to buy <a data-go="wishlist" href="#wishlist">See all</a></h3>
+        <div id="recentWish"></div>
+      </div>
+    </div>
+  </section>
+
+  <section role="tabpanel" id="log" aria-labelledby="tab-log" hidden>
+    <div class="section-head">
+      <div><h2>Service &amp; mods</h2><p>Every oil change, repair and upgrade, with the date and odometer reading.</p></div>
+      <div class="tools-row">
+        <div class="seg" id="logFilter">
+          <button type="button" data-f="all" aria-pressed="true">All</button>
+          <button type="button" data-f="service" aria-pressed="false">Service</button>
+          <button type="button" data-f="mod" aria-pressed="false">Mods</button>
+        </div>
+        <button class="btn primary" type="button" data-new="log">Add entry</button>
+      </div>
+    </div>
+    <div id="logList"></div>
+  </section>
+
+  <section role="tabpanel" id="parts" aria-labelledby="tab-parts" hidden>
+    <div class="section-head">
+      <div><h2>Parts &amp; tools</h2><p>What you've ordered or own, and whether it's on the car yet. Tools are shared by all your cars.</p></div>
+      <div class="tools-row">
+        <div class="seg" id="partsFilter">
+          <button type="button" data-f="all" aria-pressed="true">All</button>
+          <button type="button" data-f="part" aria-pressed="false">Parts</button>
+          <button type="button" data-f="tool" aria-pressed="false">Tools</button>
+        </div>
+        <button class="btn primary" type="button" data-new="owned">Add purchase</button>
+      </div>
+    </div>
+    <div id="partsList"></div>
+  </section>
+
+  <section role="tabpanel" id="wishlist" aria-labelledby="tab-wishlist" hidden>
+    <div class="section-head">
+      <div><h2>Wishlist</h2><p>Parts and tools you plan to buy. Mark one bought and it moves to Parts &amp; tools.</p></div>
+      <div class="tools-row">
+        <button class="btn primary" type="button" data-new="wishlist">Add to wishlist</button>
+      </div>
+    </div>
+    <div id="wishList"></div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <span>Garage Log is free and open source under the MIT License. Your garage is saved only in this browser; use Settings → Download backup to keep a copy.</span>
+    <a id="repoLink" href="https://github.com/" target="_blank" rel="noopener">Source code on GitHub</a>
+  </div>
+</footer>
+
+<dialog id="dlg">
+  <form id="dlgForm" method="dialog" novalidate>
+    <h2 id="dlgTitle">Add entry</h2>
+    <div class="grid" id="dlgFields"></div>
+    <div class="err" id="dlgErr" hidden></div>
+    <div class="dlg-actions">
+      <button class="btn danger" type="button" id="dlgDelete" hidden>Delete</button>
+      <div class="right">
+        <button class="btn" type="button" id="dlgCancel">Cancel</button>
+        <button class="btn primary" type="submit" id="dlgSave">Save</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="settings">
+  <form id="settingsForm" method="dialog" novalidate>
+    <h2>Settings</h2>
+    <fieldset class="set-group">
+      <legend>Back up your garage</legend>
+      <p class="set-note">Your garage lives in this browser only. Download a backup to keep it safe or move it to another device. Uploaded 3D models aren't included; upload them again after importing.</p>
+      <div class="tools-row">
+        <button class="btn" type="button" id="exportBtn">Download backup</button>
+        <button class="btn" type="button" id="importBtn">Import backup</button>
+        <input type="file" id="importFile" accept=".json,application/json" hidden>
+      </div>
+      <p class="set-note" id="importStatus" role="status"></p>
+    </fieldset>
+    <fieldset class="set-group">
+      <legend>AI part design (optional)</legend>
+      <p class="set-note">To have Claude design 3D parts the library doesn't recognize, paste an Anthropic API key from <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>. It's stored only in this browser and sent only to Anthropic. Each design costs a few cents on your Anthropic account.</p>
+      <div class="field"><label for="apiKey">Anthropic API key</label><input id="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…"></div>
+      <div class="tools-row"><button class="btn" type="button" id="saveKey">Save key</button><button class="btn danger" type="button" id="clearKey">Remove key</button><span class="set-note" id="keyStatus" role="status"></span></div>
+    </fieldset>
+    <fieldset class="set-group">
+      <legend>Start over</legend>
+      <div class="tools-row"><button class="btn danger" type="button" id="wipeBtn">Delete everything in this browser</button></div>
+    </fieldset>
+    <div class="dlg-actions"><div class="right"><button class="btn primary" type="button" id="settingsClose">Done</button></div></div>
+  </form>
+</dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

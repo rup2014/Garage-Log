@@ -1,0 +1,11 @@
+Model Information:
+* title:	Toyota Supra MK5 A90
+* source:	https://sketchfab.com/3d-models/toyota-supra-mk5-a90-30528ef37af844919074498f979b9515
+* author:	pryanex (https://sketchfab.com/pryanex)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Toyota Supra MK5 A90" (https://sketchfab.com/3d-models/toyota-supra-mk5-a90-30528ef37af844919074498f979b9515) by pryanex (https://sketchfab.com/pryanex) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

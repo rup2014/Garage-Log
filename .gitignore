@@ -1,0 +1,6 @@
+# Your own garage data and the claude.ai version stay out of the public repo
+private/
+claude-artifact/
+node_modules/
+.DS_Store
+Thumbs.db
