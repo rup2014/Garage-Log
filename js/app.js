@@ -2,6 +2,7 @@ import * as store from "./store.js";
 import { TEMPLATES, FINISHES, SUPRA_FRAME, detectTemplate, templateFor, templateKind, templateLabel, primsFor } from "./parts.js";
 import { createGarage, yawFacing } from "./garage3d.js";
 import { designPart, getKey, setKey } from "./ai.js";
+import * as sync from "./sync.js";
 
 // The garage holds every car's records; S.profile / S.log / S.items are the selected car's view.
 // Parts and log entries carry a carId (missing = the first car); tools are shared by all cars.
@@ -340,6 +341,8 @@ document.addEventListener("click", (e) => {
   else if (t.id === "welcomeAdd") { openForm("car", newCarValues()); $("dlgTitle").textContent = "Add a car"; }
   else if (t.id === "welcomeDemo") loadDemo();
   else if (t.id === "welcomeImport") $("importFile").click();
+  else if (t.id === "welcomeSync" || t.id === "syncConnect" || t.id === "syncRun" || t.id === "syncBtn") sync.connect();
+  else if (t.id === "syncOff") { sync.disconnect(); toast("Sync stopped in this browser. Your Drive copy is kept."); }
 });
 function openItem(id, overrides = {}) {
   const it = S.allItems.find((x) => x.id === id); if (!it) return;
@@ -524,13 +527,39 @@ function finishImport() {
 }
 $("wipeBtn").addEventListener("click", async () => {
   const b = $("wipeBtn");
-  if (!b.classList.contains("armed")) { b.classList.add("armed"); b.textContent = "Click again to delete all cars, logs, parts and models"; return; }
+  if (!b.classList.contains("armed")) { b.classList.add("armed"); b.textContent = "Click again to delete all cars, logs, parts and models in this browser"; return; }
+  // Stop syncing first, so this only clears this browser and the Google Drive copy is left alone.
+  sync.disconnect();
   await Promise.all(S.cars.filter((c) => c.modelId).map((c) => store.deleteModel(c.modelId).catch(() => {})));
-  store.replaceAll({});
+  store.clearLocal();
   try { localStorage.removeItem("garage-log.car"); } catch (e) {}
   b.classList.remove("armed"); b.textContent = "Delete everything in this browser";
   $("settings").close(); toast("Garage cleared");
 });
+
+/* ---------- sync ---------- */
+const agoText = (d) => { const s = Math.round((Date.now() - d) / 1000); return s < 60 ? "just now" : s < 3600 ? `${Math.round(s / 60)} min ago` : d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }); };
+function renderSync(st = sync.getState()) {
+  const avail = sync.available(), on = st.status !== "off";
+  $("syncGroup").hidden = !avail;
+  $("welcomeSync").hidden = !avail;
+  $("syncBtn").hidden = !avail || !on;
+  $("syncBtn").textContent = { syncing: "Syncing…", synced: "Synced", "needs-auth": "Tap to sync", error: "Sync problem" }[st.status] || "Sync";
+  $("syncBtn").classList.toggle("warn", st.status === "needs-auth" || st.status === "error");
+  $("syncBtn").title = st.status === "synced" && st.lastSync ? `Synced with Google Drive ${agoText(st.lastSync)}` : st.error || "Sync with Google Drive";
+  $("syncConnect").hidden = on;
+  $("syncRun").hidden = $("syncOff").hidden = !on;
+  $("syncState").textContent = !on ? "" : st.status === "syncing" ? "Syncing with Google Drive…"
+    : st.status === "synced" ? `Synced with Google Drive ${st.lastSync ? agoText(st.lastSync) : ""}. Changes sync automatically while this page is open.`
+    : st.status === "needs-auth" ? "Google sign-in expired. Tap Sync now to sign in again; your changes are kept until then."
+    : st.error || "";
+}
+sync.onState((st) => {
+  renderSync(st);
+  if (st.status === "synced" && $("welcome").hidden === false && S.cars.length === 0) toast("Your Google Drive has no garage yet. Add a car and it will sync.");
+});
+sync.onModels(() => { [...modelBlobs.entries()].forEach(([id, v]) => { if (!v) modelBlobs.delete(id); }); renderBuild(); });
+setInterval(() => { if (sync.getState().status === "synced") renderSync(); }, 30000);
 
 /* ---------- demo garage ---------- */
 function loadDemo() {
@@ -570,3 +599,5 @@ store.requestPersistence();
 showTab((location.hash || "").slice(1));
 refresh();
 S.loaded = true;
+renderSync();
+sync.start();

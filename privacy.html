@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<title>Privacy Policy · Garage Log</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="wrap doc-top"><a href="./">Garage Log</a><a href="terms.html" class="set-note">Terms of Use</a></header>
+<main class="wrap doc">
+<h1>Privacy Policy</h1>
+<p class="eff">Effective October 25, 2026</p>
+
+<p>Garage Log is a free, open-source web app for tracking car services, modifications, parts and tools. It's maintained by the GitHub user <a href="https://github.com/rup2014">rup2014</a> ("we", "us"). This policy explains what happens to your information when you use the app at <a href="https://rup2014.github.io/Garage-Log/">rup2014.github.io/Garage-Log</a>.</p>
+
+<p class="callout"><strong>The short version:</strong> we don't collect, see or store your garage. It's saved in your own browser and, if you turn on sync, in your own Google Drive. The app has no accounts, no analytics, no ads and no tracking cookies.</p>
+
+<h2>Information stored on your device</h2>
+<p>The cars, service and mod history, parts, tools, wishlist, notes, prices and links you enter, and any 3D model files you upload, are saved only in your browser's local storage (localStorage and IndexedDB) on the device you're using. We never receive them. Anyone who can use your browser profile can see this data. Clearing your browser's site data deletes it, so download a backup (Settings → Download backup) if you want to keep a copy.</p>
+<p>If you add an Anthropic API key for AI part design, the key is also saved only in your browser's local storage.</p>
+
+<h2>Hosting</h2>
+<p>The app is hosted on GitHub Pages. When you load it, your browser connects to GitHub's servers, which may log technical information such as your IP address, browser type and the time of the request, as described in the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub General Privacy Statement</a>. We don't receive or use those logs. The app's code, fonts and 3D libraries are served from the same site, so loading the app doesn't contact other companies.</p>
+
+<h2>Optional features that use third parties</h2>
+<p>These only run if you turn them on.</p>
+<ul>
+  <li><strong>Google Drive sync.</strong> If you choose "Sync with Google Drive", you sign in with Google and grant Garage Log access to its own app data folder in your Google Drive (the <code>drive.appdata</code> permission). Garage Log can't see, read or change any other file in your Drive. Your garage (the same information described above, including uploaded 3D models) is copied to that hidden folder so it can load on your other devices. Your browser talks to Google directly; nothing passes through any server of ours, and we can't access your Drive. Google's handling of this data is covered by the <a href="https://policies.google.com/privacy">Google Privacy Policy</a>. To stop, choose "Stop syncing in this browser" in Settings, and remove Garage Log's access at <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>; in Google Drive's settings under "Manage apps" you can also delete the app's hidden data.</li>
+  <li><strong>AI part design.</strong> If you add your own Anthropic API key and choose "Design with AI", your browser sends the part's name, brand and notes, your car's year, make, model and approximate dimensions, and your API key directly to Anthropic's API, and first loads Anthropic's software library from the jsDelivr CDN (which, like any website, receives your IP address). Anthropic processes the request under its own terms and <a href="https://www.anthropic.com/legal/privacy">Privacy Policy</a>, and charges your Anthropic account. Don't put personal information in part names or notes you send for AI design.</li>
+  <li><strong>Links to other sites.</strong> Product links you save, and links to Sketchfab, Anthropic, Google and GitHub, open other websites with their own privacy practices.</li>
+</ul>
+
+<h2>Google API Services User Data Policy</h2>
+<p>Garage Log's use and transfer of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements. Garage Log uses Google Drive access only to store and retrieve your own garage file and 3D models in its app data folder, at your request, so your garage is available on your devices. That data isn't transferred to anyone else, isn't used for advertising, and isn't read by people.</p>
+
+<h2>Cookies and tracking</h2>
+<p>Garage Log doesn't use cookies, analytics, advertising or tracking. Google's sign-in, if you use sync, may set its own cookies on Google's domains, under Google's policies.</p>
+
+<h2>Children</h2>
+<p>Garage Log isn't directed to children under 13, and we don't knowingly collect information from anyone, including children.</p>
+
+<h2>Your choices and rights</h2>
+<p>Because your data stays on your device and in your own Google Drive, you're in control of it: you can view, edit, export or delete it in the app at any time (Settings → Download backup, or Settings → Delete everything in this browser). We don't hold a copy, so there's nothing for us to provide, correct or delete on request, and we don't sell or share personal information. If you're in California, the European Union or another region with privacy rights, those rights apply to the companies that process your data for the features you choose (GitHub, Google and Anthropic), and you can contact them directly.</p>
+
+<h2>Security</h2>
+<p>Your data is protected by your browser's site isolation and, for sync, by your Google account. Keep your device and Google account secure, and remove your API key from Settings if others use your browser. The app's security policy limits it to loading code only from this site and the services listed above. To report a security problem, see <a href="https://github.com/rup2014/Garage-Log/security/policy">SECURITY.md</a>.</p>
+
+<h2>Changes</h2>
+<p>We may update this policy as the app changes. The effective date above shows the latest version, and every change is visible in the project's public history on GitHub.</p>
+
+<h2>Contact</h2>
+<p>Questions about this policy: open an issue at <a href="https://github.com/rup2014/Garage-Log/issues">github.com/rup2014/Garage-Log/issues</a>. Don't include personal information in a public issue.</p>
+</main>
+</body>
+</html>

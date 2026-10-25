@@ -6,10 +6,12 @@
 <title>Garage Log</title>
 <meta name="description" content="Track your cars' services, mods, parts and tools, with a 3D garage that shows each mod you install. Free and open source; your data stays in your browser.">
 <meta name="theme-color" content="#1d5aa0">
+<!-- Only this site, Google sign-in/Drive (for optional sync), Anthropic (for optional AI design) and the
+     jsDelivr copy of Anthropic's SDK are allowed. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://accounts.google.com/gsi/client; connect-src 'self' blob: https://api.anthropic.com https://www.googleapis.com https://accounts.google.com https://cdn.jsdelivr.net; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; font-src 'self'; frame-src https://accounts.google.com; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231d5aa0'/%3E%3Cpath d='M6 19l3-6c.4-.8 1.2-1.3 2.1-1.3h9.8c.9 0 1.7.5 2.1 1.3l3 6v4a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-1H10v1a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1z' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -24,6 +26,7 @@
         <span class="odo-digits" id="odoDigits" title="Current odometer"></span>
         <span class="odo-unit" id="odoUnit">mi</span>
         <button class="btn small" id="editCar" type="button">Edit car</button>
+        <button class="btn small sync-btn" id="syncBtn" type="button" hidden></button>
         <button class="btn small" id="openSettings" type="button">Settings</button>
       </div>
     </div>
@@ -46,7 +49,9 @@
       <button class="btn primary" type="button" id="welcomeAdd">Add your car</button>
       <button class="btn" type="button" id="welcomeDemo">Try the demo garage</button>
       <button class="btn" type="button" id="welcomeImport">Import a backup</button>
+      <button class="btn" type="button" id="welcomeSync" hidden>Restore from Google Drive</button>
     </div>
+    <p class="set-note">By using Garage Log you agree to the <a href="terms.html">Terms of Use</a>. See the <a href="privacy.html">Privacy Policy</a> for how your data is handled.</p>
   </section>
 
   <section role="tabpanel" id="overview" aria-labelledby="tab-overview">
@@ -141,8 +146,8 @@
 
 <footer class="site-foot">
   <div class="wrap">
-    <span>Garage Log is free and open source under the MIT License. Your garage is saved only in this browser; use Settings → Download backup to keep a copy.</span>
-    <a id="repoLink" href="https://github.com/rup2014/Garage-Log" target="_blank" rel="noopener">Source code on GitHub</a>
+    <span>Garage Log is free and open source under the MIT License, provided as is with no warranty. Your garage is saved in this browser, and in your own Google Drive if you turn on sync. Car work and mods are at your own risk; follow your owner's manual and local laws.</span>
+    <nav class="foot-links" aria-label="Legal"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a id="repoLink" href="https://github.com/rup2014/Garage-Log" target="_blank" rel="noopener">Source code</a></nav>
   </div>
 </footer>
 
@@ -164,9 +169,19 @@
 <dialog id="settings">
   <form id="settingsForm" method="dialog" novalidate>
     <h2>Settings</h2>
+    <fieldset class="set-group" id="syncGroup">
+      <legend>Sync across devices</legend>
+      <p class="set-note" id="syncIntro">Keep your garage in step on your phone and computer. It's saved in a hidden app folder in your own Google Drive; Garage Log can't see anything else in your Drive, and no one else gets a copy.</p>
+      <p class="set-note" id="syncState" role="status"></p>
+      <div class="tools-row">
+        <button class="btn primary" type="button" id="syncConnect">Sync with Google Drive</button>
+        <button class="btn" type="button" id="syncRun" hidden>Sync now</button>
+        <button class="btn danger" type="button" id="syncOff" hidden>Stop syncing in this browser</button>
+      </div>
+    </fieldset>
     <fieldset class="set-group">
       <legend>Back up your garage</legend>
-      <p class="set-note">Your garage lives in this browser only. Download a backup to keep it safe or move it to another device. Uploaded 3D models aren't included; upload them again after importing.</p>
+      <p class="set-note">Download a copy of your garage to keep it safe or move it somewhere without sync. Uploaded 3D models aren't included in the file; Google Drive sync does include them.</p>
       <div class="tools-row">
         <button class="btn" type="button" id="exportBtn">Download backup</button>
         <button class="btn" type="button" id="importBtn">Import backup</button>
@@ -176,7 +191,7 @@
     </fieldset>
     <fieldset class="set-group">
       <legend>AI part design (optional)</legend>
-      <p class="set-note">To have Claude design 3D parts the library doesn't recognize, paste an Anthropic API key from <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>. It's stored only in this browser and sent only to Anthropic. Each design costs a few cents on your Anthropic account.</p>
+      <p class="set-note">To have Claude design 3D parts the library doesn't recognize, paste an Anthropic API key from <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>. It's stored only in this browser and sent only to Anthropic, together with the part's name, brand and notes and your car's make, model and size. Each design costs a few cents on your Anthropic account, and your use is covered by <a href="https://www.anthropic.com/legal/commercial-terms" target="_blank" rel="noopener">Anthropic's terms</a>. AI designs are rough visual approximations, not real part specifications.</p>
       <div class="field"><label for="apiKey">Anthropic API key</label><input id="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…"></div>
       <div class="tools-row"><button class="btn" type="button" id="saveKey">Save key</button><button class="btn danger" type="button" id="clearKey">Remove key</button><span class="set-note" id="keyStatus" role="status"></span></div>
     </fieldset>
@@ -188,8 +203,8 @@
   </form>
 </dialog>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="vendor/three/three.min.js"></script>
+<script src="vendor/three/GLTFLoader.js"></script>
 <script type="module" src="js/app.js"></script>
 </body>
 </html>
